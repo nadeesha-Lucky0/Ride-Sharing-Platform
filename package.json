@@ -1,0 +1,36 @@
+{
+  "name": "ridelink-backend",
+  "version": "1.0.0",
+  "description": "RideLink - Backend Microservices Architecture for IT3130 Application Development",
+  "private": true,
+  "workspaces": [
+    "services/account-service",
+    "services/driver-service",
+    "services/ride-service",
+    "services/payment-service",
+    "gateway"
+  ],
+  "scripts": {
+    "start:account": "npm --workspace=services/account-service run start",
+    "start:driver": "npm --workspace=services/driver-service run start",
+    "start:ride": "npm --workspace=services/ride-service run start",
+    "start:payment": "npm --workspace=services/payment-service run start",
+    "start:gateway": "npm --workspace=gateway run start",
+    "dev:account": "npm --workspace=services/account-service run dev",
+    "dev:driver": "npm --workspace=services/driver-service run dev",
+    "dev:ride": "npm --workspace=services/ride-service run dev",
+    "dev:payment": "npm --workspace=services/payment-service run dev",
+    "dev:gateway": "npm --workspace=gateway run dev",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "keywords": [
+    "microservices",
+    "nodejs",
+    "express",
+    "mongodb",
+    "docker",
+    "ridelink"
+  ],
+  "author": "RideLink Development Team",
+  "license": "ISC"
+}

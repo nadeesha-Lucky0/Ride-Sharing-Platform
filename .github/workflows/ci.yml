@@ -1,0 +1,49 @@
+name: RideLink CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  lint-and-test:
+    name: Build & Test (${{ matrix.service.name }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - name: Account Service
+            path: services/account-service
+          - name: Driver Service
+            path: services/driver-service
+          - name: Ride Service
+            path: services/ride-service
+          - name: Payment Service
+            path: services/payment-service
+          - name: API Gateway
+            path: gateway
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: ${{ matrix.service.path }}/package.json
+
+      - name: Install dependencies (${{ matrix.service.name }})
+        working-directory: ${{ matrix.service.path }}
+        run: npm ci
+
+      - name: Run test suite (${{ matrix.service.name }})
+        working-directory: ${{ matrix.service.path }}
+        run: npm test --if-present

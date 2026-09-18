@@ -1,0 +1,145 @@
+# ==============================================================================
+# RIDELINK DOCKER COMPOSE CONFIGURATION
+# ==============================================================================
+# ARCHITECTURAL NOTE ON DATABASE PROVISIONING:
+# In strict accordance with the RideLink microservices architecture and
+# assignment guidelines, database-per-service isolation is enforced.
+# Each team member independently provisions, manages, and owns their own
+# MongoDB Atlas cluster or isolated local database instance.
+#
+# Consequently, NO shared MongoDB service container is defined in this file.
+# Every microservice connects OUT to its designated owner's connection string
+# supplied through its independent `.env` file.
+#
+# SHARED INFRASTRUCTURE:
+# RabbitMQ is provided as the singular shared message broker for asynchronous
+# event-driven communication (e.g., between Ride Service and Payment/Driver).
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------------------------
+  # Shared Message Broker
+  # ----------------------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: ridelink-rabbitmq
+    ports:
+      - "5672:5672"     # AMQP protocol port
+      - "15672:15672"   # RabbitMQ Management Web UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - ridelink-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # 1. Account Service (Member 1)
+  # ----------------------------------------------------------------------------
+  account-service:
+    build:
+      context: ./services/account-service
+      dockerfile: Dockerfile
+    container_name: ridelink-account-service
+    ports:
+      - "5001:5001"
+    env_file:
+      - ./services/account-service/.env
+    networks:
+      - ridelink-network
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # 2. Driver & Vehicle Service (Member 2)
+  # ----------------------------------------------------------------------------
+  driver-service:
+    build:
+      context: ./services/driver-service
+      dockerfile: Dockerfile
+    container_name: ridelink-driver-service
+    ports:
+      - "5002:5002"
+    env_file:
+      - ./services/driver-service/.env
+    networks:
+      - ridelink-network
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # 3. Ride Management Service (Member 3)
+  # ----------------------------------------------------------------------------
+  ride-service:
+    build:
+      context: ./services/ride-service
+      dockerfile: Dockerfile
+    container_name: ridelink-ride-service
+    ports:
+      - "5003:5003"
+    env_file:
+      - ./services/ride-service/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      driver-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+    networks:
+      - ridelink-network
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # 4. Fare & Payment Service (Member 4)
+  # ----------------------------------------------------------------------------
+  payment-service:
+    build:
+      context: ./services/payment-service
+      dockerfile: Dockerfile
+    container_name: ridelink-payment-service
+    ports:
+      - "5004:5004"
+    env_file:
+      - ./services/payment-service/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - ridelink-network
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # API Gateway (Supporting Infrastructure)
+  # ----------------------------------------------------------------------------
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: ridelink-gateway
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./gateway/.env
+    depends_on:
+      - account-service
+      - driver-service
+      - ride-service
+      - payment-service
+    networks:
+      - ridelink-network
+    restart: unless-stopped
+
+networks:
+  ridelink-network:
+    driver: bridge
+
+volumes:
+  rabbitmq_data:
+    driver: local
