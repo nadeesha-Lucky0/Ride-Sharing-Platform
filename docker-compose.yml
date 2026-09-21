@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  # -------------------------------------------------------------
+  # MongoDB Databases
+  # -------------------------------------------------------------
+  mongodb:
+    image: mongo:6.0
+    container_name: ridelink-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - ridelink-net
+
+  # -------------------------------------------------------------
+  # Member 1: Account Service (Port 8081)
+  # -------------------------------------------------------------
+  account-service:
+    build:
+      context: ./account-service
+      dockerfile: Dockerfile
+    container_name: ridelink-account-service
+    restart: on-failure
+    ports:
+      - "8081:8081"
+    environment:
+      - SERVER_PORT=8081
+      # Docker MongoDB container URI (or replace with MongoDB Atlas link: mongodb+srv://<user>:<pwd>@cluster0.mongodb.net/account_db)
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:password@mongodb:27017/account_db?authSource=admin
+      - JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      - JWT_EXPIRATION=86400000
+    depends_on:
+      - mongodb
+    networks:
+      - ridelink-net
+
+  # -------------------------------------------------------------
+  # Member 2: Driver Service (Port 8082)
+  # -------------------------------------------------------------
+  driver-service:
+    build:
+      context: ./driver-service
+      dockerfile: Dockerfile
+    container_name: ridelink-driver-service
+    restart: on-failure
+    ports:
+      - "8082:8082"
+    environment:
+      - SERVER_PORT=8082
+      # Docker MongoDB container URI (or replace with MongoDB Atlas link: mongodb+srv://<user>:<pwd>@cluster0.mongodb.net/driver_db)
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:password@mongodb:27017/driver_db?authSource=admin
+    depends_on:
+      - mongodb
+    networks:
+      - ridelink-net
+
+  # -------------------------------------------------------------
+  # Member 3: Ride Service (Port 8083)
+  # -------------------------------------------------------------
+  ride-service:
+    build:
+      context: ./ride-service
+      dockerfile: Dockerfile
+    container_name: ridelink-ride-service
+    restart: on-failure
+    ports:
+      - "8083:8083"
+    environment:
+      - SERVER_PORT=8083
+      # Docker MongoDB container URI (or replace with MongoDB Atlas link: mongodb+srv://<user>:<pwd>@cluster0.mongodb.net/ride_db)
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:password@mongodb:27017/ride_db?authSource=admin
+      - SERVICES_ACCOUNT_URL=http://account-service:8081
+      - SERVICES_DRIVER_URL=http://driver-service:8082
+      - SERVICES_PAYMENT_URL=http://payment-service:8084
+    depends_on:
+      - mongodb
+      - account-service
+      - driver-service
+    networks:
+      - ridelink-net
+
+  # -------------------------------------------------------------
+  # Member 4: Payment Service (Port 8084)
+  # -------------------------------------------------------------
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    container_name: ridelink-payment-service
+    restart: on-failure
+    ports:
+      - "8084:8084"
+    environment:
+      - SERVER_PORT=8084
+      # Docker MongoDB container URI (or replace with MongoDB Atlas link: mongodb+srv://<user>:<pwd>@cluster0.mongodb.net/payment_db)
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:password@mongodb:27017/payment_db?authSource=admin
+    depends_on:
+      - mongodb
+    networks:
+      - ridelink-net
+
+networks:
+  ridelink-net:
+    driver: bridge
+
+volumes:
+  mongo_data:
+    driver: local
