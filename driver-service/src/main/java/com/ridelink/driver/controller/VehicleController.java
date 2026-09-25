@@ -1,7 +1,8 @@
 package com.ridelink.driver.controller;
 
+import com.ridelink.driver.dto.VehicleRequestDto;
 import com.ridelink.driver.model.Vehicle;
-import com.ridelink.driver.repository.VehicleRepository;
+import com.ridelink.driver.service.VehicleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,18 +14,23 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class VehicleController {
 
-    private final VehicleRepository vehicleRepository;
+    private final VehicleService vehicleService;
 
     @PostMapping
-    public ResponseEntity<Vehicle> registerVehicle(@Valid @RequestBody Vehicle vehicle) {
-        Vehicle savedVehicle = vehicleRepository.save(vehicle);
+    public ResponseEntity<Vehicle> registerVehicle(
+            @Valid @RequestBody VehicleRequestDto dto) {
+
+        Vehicle savedVehicle = vehicleService.registerVehicle(dto);
+
         return new ResponseEntity<>(savedVehicle, HttpStatus.CREATED);
     }
 
     @GetMapping("/driver/{driverId}")
-    public ResponseEntity<Vehicle> getVehicleByDriverId(@PathVariable String driverId) {
-        return vehicleRepository.findByDriverId(driverId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Vehicle> getVehicleByDriverId(
+            @PathVariable String driverId) {
+
+        return ResponseEntity.ok(
+                vehicleService.getVehicleByDriverId(driverId)
+        );
     }
 }
