@@ -49,10 +49,8 @@ services:
       - "8082:8082"
     environment:
       - SERVER_PORT=8082
-      # Docker MongoDB container URI (or replace with MongoDB Atlas link: mongodb+srv://<user>:<pwd>@cluster0.mongodb.net/driver_db)
-      - SPRING_DATA_MONGODB_URI=mongodb://admin:password@mongodb:27017/driver_db?authSource=admin
-    depends_on:
-      - mongodb
+      # MongoDB Atlas URI
+      - SPRING_DATA_MONGODB_URI=mongodb+srv://samadhih016_db_user:sam123%23%23%23@driverandvehicleservice.ge93avy.mongodb.net/driver_db?retryWrites=true&w=majority&appName=DriverandVehicleService
     networks:
       - ridelink-net
 
