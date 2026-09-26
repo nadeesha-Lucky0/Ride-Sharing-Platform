@@ -9,18 +9,23 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Data Transfer Object (DTO) representing a payment request initiated for a ride.
+ * Contains necessary identifiers, transaction amount, and the chosen payment method.
+ */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentRequestDto {
 
+ 
     @NotBlank(message = "Ride ID is required")
     private String rideId;
-
+   
     @NotBlank(message = "Passenger ID is required")
     private String passengerId;
-
+    
     @NotBlank(message = "Driver ID is required")
     private String driverId;
 
