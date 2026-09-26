@@ -1,7 +1,7 @@
 package com.ridelink.payment.model;
 
 public enum PaymentStatus {
-    PENDING,
+    PENDING,   // types of status
     COMPLETED,
     FAILED,
     REFUNDED
