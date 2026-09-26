@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # -------------------------------------------------------------
   # MongoDB Databases
@@ -31,12 +29,10 @@ services:
       - "8081:8081"
     environment:
       - SERVER_PORT=8081
-      # Docker MongoDB container URI (or replace with MongoDB Atlas link: mongodb+srv://<user>:<pwd>@cluster0.mongodb.net/account_db)
-      - SPRING_DATA_MONGODB_URI=mongodb://admin:password@mongodb:27017/account_db?authSource=admin
+      # MongoDB Atlas URI
+      - SPRING_DATA_MONGODB_URI=mongodb+srv://nadeeshalakshan200108_db_user:Nadeesha200108@account-service.lgsyltg.mongodb.net/account_db?retryWrites=true&w=majority
       - JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
       - JWT_EXPIRATION=86400000
-    depends_on:
-      - mongodb
     networks:
       - ridelink-net
 
@@ -53,10 +49,8 @@ services:
       - "8082:8082"
     environment:
       - SERVER_PORT=8082
-      # Docker MongoDB container URI (or replace with MongoDB Atlas link: mongodb+srv://<user>:<pwd>@cluster0.mongodb.net/driver_db)
-      - SPRING_DATA_MONGODB_URI=mongodb://admin:password@mongodb:27017/driver_db?authSource=admin
-    depends_on:
-      - mongodb
+      # MongoDB Atlas URI
+      - SPRING_DATA_MONGODB_URI=mongodb+srv://samadhih016_db_user:sam123%23%23%23@driverandvehicleservice.ge93avy.mongodb.net/driver_db?retryWrites=true&w=majority&appName=DriverandVehicleService
     networks:
       - ridelink-net
 
@@ -73,15 +67,11 @@ services:
       - "8083:8083"
     environment:
       - SERVER_PORT=8083
-      # Docker MongoDB container URI (or replace with MongoDB Atlas link: mongodb+srv://<user>:<pwd>@cluster0.mongodb.net/ride_db)
-      - SPRING_DATA_MONGODB_URI=mongodb://admin:password@mongodb:27017/ride_db?authSource=admin
+      # MongoDB Atlas URI
+      - SPRING_DATA_MONGODB_URI=mongodb+srv://growhighmarketing22_db_user:Growhigh@1019@ridemanagementservice.pcw5epw.mongodb.net/ride_db?retryWrites=true&w=majority&appName=RideManagementService
       - SERVICES_ACCOUNT_URL=http://account-service:8081
       - SERVICES_DRIVER_URL=http://driver-service:8082
       - SERVICES_PAYMENT_URL=http://payment-service:8084
-    depends_on:
-      - mongodb
-      - account-service
-      - driver-service
     networks:
       - ridelink-net
 
@@ -98,10 +88,8 @@ services:
       - "8084:8084"
     environment:
       - SERVER_PORT=8084
-      # Docker MongoDB container URI (or replace with MongoDB Atlas link: mongodb+srv://<user>:<pwd>@cluster0.mongodb.net/payment_db)
-      - SPRING_DATA_MONGODB_URI=mongodb://admin:password@mongodb:27017/payment_db?authSource=admin
-    depends_on:
-      - mongodb
+      # MongoDB Atlas URI
+      - SPRING_DATA_MONGODB_URI=mongodb+srv://it24102198_db_user:UwQUvrcWlIC62uep@payment-fare.a8vzjtg.mongodb.net/payment_db?retryWrites=true&w=majority&appName=Payment-Fare
     networks:
       - ridelink-net
 

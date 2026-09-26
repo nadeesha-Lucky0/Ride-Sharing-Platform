@@ -39,8 +39,21 @@ public class RideService {
             estimatedFare = 50.0 + (distanceKm * 15.0);
         }
 
+        String matchedDriverId = null;
+        try {
+            List<Map<String, Object>> availableDrivers = driverClient.getAvailableDrivers(
+                    dto.getPickupLocation().getLatitude(),
+                    dto.getPickupLocation().getLongitude(),
+                    10.0
+            ).block();
+            matchedDriverId = extractDriverId(availableDrivers);
+        } catch (Exception ignored) {
+            matchedDriverId = null;
+        }
+
         Ride ride = Ride.builder()
                 .passengerId(dto.getPassengerId())
+                .driverId(matchedDriverId)
                 .pickupLocation(dto.getPickupLocation())
                 .dropoffLocation(dto.getDropoffLocation())
                 .status(RideStatus.REQUESTED)
@@ -128,6 +141,23 @@ public class RideService {
         return Math.round(EARTH_RADIUS_KM * c * 100.0) / 100.0;
     }
 
+    private String extractDriverId(List<Map<String, Object>> drivers) {
+        if (drivers == null || drivers.isEmpty()) {
+            return null;
+        }
+
+        for (Map<String, Object> driver : drivers) {
+            if (driver == null || !driver.containsKey("id")) {
+                continue;
+            }
+            Object driverId = driver.get("id");
+            if (driverId != null) {
+                return driverId.toString();
+            }
+        }
+        return null;
+    }
+
     private RideResponseDto toDto(Ride ride) {
         return RideResponseDto.builder()
                 .id(ride.getId())
@@ -142,7 +172,10 @@ public class RideService {
                 .estimatedDurationMinutes(ride.getEstimatedDurationMinutes())
                 .requestedAt(ride.getRequestedAt())
                 .acceptedAt(ride.getAcceptedAt())
+                .startedAt(ride.getStartedAt())
                 .completedAt(ride.getCompletedAt())
+                .cancelledAt(ride.getCancelledAt())
+                .cancellationReason(ride.getCancellationReason())
                 .build();
     }
 }

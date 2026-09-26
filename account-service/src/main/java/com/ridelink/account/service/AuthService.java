@@ -3,6 +3,7 @@ package com.ridelink.account.service;
 import com.ridelink.account.dto.AuthResponse;
 import com.ridelink.account.dto.LoginRequest;
 import com.ridelink.account.dto.RegisterRequest;
+import com.ridelink.account.model.AccountStatus;
 import com.ridelink.account.model.User;
 import com.ridelink.account.repository.UserRepository;
 import com.ridelink.account.security.JwtTokenProvider;
@@ -21,7 +22,7 @@ public class AuthService {
     private final JwtTokenProvider tokenProvider;
 
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.getEmail().toLowerCase())) {
             throw new IllegalArgumentException("Email already registered: " + request.getEmail());
         }
 
@@ -32,6 +33,7 @@ public class AuthService {
                 .lastName(request.getLastName())
                 .phoneNumber(request.getPhoneNumber())
                 .role(request.getRole())
+                .status(AccountStatus.ACTIVE)
                 .active(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -55,6 +57,10 @@ public class AuthService {
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Invalid email or password");
+        }
+
+        if (user.getStatus() == AccountStatus.SUSPENDED || !user.isActive()) {
+            throw new IllegalStateException("Account is suspended or inactive. Please contact support.");
         }
 
         String token = tokenProvider.generateToken(user.getId(), user.getEmail(), user.getRole().name());

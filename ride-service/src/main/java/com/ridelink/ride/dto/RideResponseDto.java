@@ -26,5 +26,8 @@ public class RideResponseDto {
     private Integer estimatedDurationMinutes;
     private LocalDateTime requestedAt;
     private LocalDateTime acceptedAt;
+    private LocalDateTime startedAt;
     private LocalDateTime completedAt;
+    private LocalDateTime cancelledAt;
+    private String cancellationReason;
 }

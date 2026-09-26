@@ -17,3 +17,4 @@ public class FareEstimateResponse {
     private Double estimatedTotalFare;
     private String currency;
 }
+
