@@ -35,7 +35,11 @@ public class User {
 
     private Role role;
 
-    private boolean active;
+    @Builder.Default
+    private AccountStatus status = AccountStatus.ACTIVE;
+
+    @Builder.Default
+    private boolean active = true;
 
     @CreatedDate
     private LocalDateTime createdAt;
