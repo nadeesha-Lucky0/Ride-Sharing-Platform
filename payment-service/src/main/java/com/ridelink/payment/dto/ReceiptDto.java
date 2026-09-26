@@ -8,19 +8,22 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * Data Transfer Object (DTO) representing the payment receipt generated after a successful transaction.
+ */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReceiptDto {
-    private String receiptNumber;
-    private String rideId;
-    private String paymentId;
-    private Double totalAmount;
-    private Double baseFare;
-    private Double distanceFare;
-    private Double timeFare;
-    private Double taxAmount;
+    private String receiptNumber;     // Unique identifier for the receipt
+    private String rideId;            // ID of the completed ride
+    private String paymentId;         // ID of the associated payment transaction
+    private Double totalAmount;       // Final total amount paid
+    private Double baseFare;          // Initial base fare for the ride
+    private Double distanceFare;      // Fare calculated based on distance traveled
+    private Double timeFare;          // Fare calculated based on trip duration
+    private Double taxAmount;         // Tax applied to the total fare
     private PaymentMethod paymentMethod;
-    private LocalDateTime issuedAt;
+    private LocalDateTime issuedAt;   
 }
