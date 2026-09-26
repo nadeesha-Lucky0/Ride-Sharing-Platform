@@ -44,3 +44,4 @@ public class Receipt {
     @CreatedDate
     private LocalDateTime issuedAt;
 }
+
