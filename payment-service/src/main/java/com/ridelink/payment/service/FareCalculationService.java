@@ -1,59 +1,41 @@
 package com.ridelink.payment.service;
 
+import com.ridelink.payment.dto.CoordinateDto;
 import com.ridelink.payment.dto.FareEstimateRequest;
 import com.ridelink.payment.dto.FareEstimateResponse;
+import com.ridelink.payment.dto.FinalFareRequest;
+import com.ridelink.payment.dto.FinalFareResponse;
 import com.ridelink.payment.model.FareRule;
-import com.ridelink.payment.repository.FareRuleRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
-@Service
-@RequiredArgsConstructor
-public class FareCalculationService {
+import java.util.List;
 
-    private final FareRuleRepository fareRuleRepository;
+/**
+ * Service interface defining contract for RideLink fare calculations.
+ */
+public interface FareCalculationService {
 
-    @Value("${app.fare.base-fare:50.0}")
-    private double defaultBaseFare;
+    /**
+     * Calculates an upfront estimated fare based on distance or pickup/dropoff GPS coordinates, duration, and vehicle category.
+     */
+    FareEstimateResponse estimateFare(FareEstimateRequest request);
 
-    @Value("${app.fare.per-km-rate:15.0}")
-    private double defaultPerKmRate;
+    /**
+     * Calculates the finalized fare upon ride completion using actual distance, actual duration, driver waiting time, surge, and promo discounts.
+     */
+    FinalFareResponse calculateFinalFare(FinalFareRequest request);
 
-    @Value("${app.fare.per-minute-rate:2.0}")
-    private double defaultPerMinuteRate;
+    /**
+     * Retrieves all available fare rules.
+     */
+    List<FareRule> getAllFareRules();
 
-    @Value("${app.fare.surge-multiplier:1.0}")
-    private double defaultSurgeMultiplier;
+    /**
+     * Resolves the fare rule for a given category.
+     */
+    FareRule resolveFareRule(String vehicleCategory);
 
-    public FareEstimateResponse estimateFare(FareEstimateRequest request) {
-        double baseFare = defaultBaseFare;
-        double perKmRate = defaultPerKmRate;
-        double perMinuteRate = defaultPerMinuteRate;
-
-        if (request.getVehicleCategory() != null) {
-            FareRule rule = fareRuleRepository.findByVehicleCategory(request.getVehicleCategory()).orElse(null);
-            if (rule != null) {
-                baseFare = rule.getBaseFare();
-                perKmRate = rule.getPerKmRate();
-                perMinuteRate = rule.getPerMinuteRate();
-            }
-        }
-
-        double distanceFare = request.getDistanceKm() * perKmRate;
-        double timeFare = request.getEstimatedDurationMinutes() * perMinuteRate;
-        double surgeMultiplier = defaultSurgeMultiplier;
-
-        double subtotal = baseFare + distanceFare + timeFare;
-        double total = Math.round(subtotal * surgeMultiplier * 100.0) / 100.0;
-
-        return FareEstimateResponse.builder()
-                .baseFare(baseFare)
-                .distanceFare(Math.round(distanceFare * 100.0) / 100.0)
-                .timeFare(Math.round(timeFare * 100.0) / 100.0)
-                .surgeMultiplier(surgeMultiplier)
-                .estimatedTotalFare(total)
-                .currency("INR")
-                .build();
-    }
+    /**
+     * Calculates distance between two GPS coordinates using the Haversine formula.
+     */
+    double calculateHaversineDistance(CoordinateDto start, CoordinateDto end);
 }
