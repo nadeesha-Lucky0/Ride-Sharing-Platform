@@ -27,7 +27,14 @@ public class Receipt {
     @Indexed
     private String rideId;
 
+    @Indexed
     private String paymentId;
+
+    @Indexed
+    private String passengerId;
+
+    @Indexed
+    private String driverId;
 
     private Double totalAmount;
 
@@ -37,11 +44,16 @@ public class Receipt {
 
     private Double timeFare;
 
+    private Double surgeMultiplier;
+
     private Double taxAmount;
 
+    private Double discountAmount;
+
     private PaymentMethod paymentMethod;
+
+    private PaymentStatus paymentStatus;
 
     @CreatedDate
     private LocalDateTime issuedAt;
 }
-

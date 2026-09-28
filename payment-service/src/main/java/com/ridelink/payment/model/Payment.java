@@ -25,17 +25,30 @@ public class Payment {
     @Indexed
     private String rideId;
 
+    @Indexed
     private String passengerId;
 
+    @Indexed
     private String driverId;
 
     private Double amount;
 
+    @Builder.Default
+    private String currency = "INR";
+
     private PaymentMethod paymentMethod;
 
+    @Indexed
     private PaymentStatus status;
 
+    @Indexed(unique = true)
     private String transactionReference;
+
+    private String failureReason;
+
+    private String refundReason;
+
+    private LocalDateTime refundedAt;
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -43,4 +56,3 @@ public class Payment {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 }
-

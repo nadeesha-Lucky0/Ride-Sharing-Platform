@@ -4,6 +4,7 @@ import com.ridelink.payment.model.Receipt;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -15,17 +16,26 @@ public interface ReceiptRepository extends MongoRepository<Receipt, String> {
 
     /**
      * Retrieves a receipt associated with a specific ride ID.
-     *
-     * @param rideId the unique identifier of the ride
-     * @return an Optional containing the Receipt if found, or empty otherwise
      */
     Optional<Receipt> findByRideId(String rideId);
 
     /**
      * Retrieves a receipt based on its unique receipt number.
-     *
-     * @param receiptNumber the unique serial or number of the receipt
-     * @return an Optional containing the Receipt if found, or empty otherwise
      */
     Optional<Receipt> findByReceiptNumber(String receiptNumber);
+
+    /**
+     * Retrieves a receipt based on its associated payment ID.
+     */
+    Optional<Receipt> findByPaymentId(String paymentId);
+
+    /**
+     * Retrieves all receipts issued for a specific passenger.
+     */
+    List<Receipt> findByPassengerId(String passengerId);
+
+    /**
+     * Retrieves all receipts issued for a specific driver.
+     */
+    List<Receipt> findByDriverId(String driverId);
 }
