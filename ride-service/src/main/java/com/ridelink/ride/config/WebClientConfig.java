@@ -1,4 +1,4 @@
-package com.ridelink.ride.client;
+package com.ridelink.ride.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
