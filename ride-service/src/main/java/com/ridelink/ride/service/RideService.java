@@ -185,7 +185,6 @@ public class RideService {
                         ride.getActualFare(),
                         "CARD"
                 ).block(java.time.Duration.ofSeconds(3));
-                ).subscribe();
             }
         } catch (Exception e) {
             log.warn("Failed during ride completion inter-service integration: {}", e.getMessage());
