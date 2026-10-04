@@ -177,6 +177,7 @@ public class RideService {
         try {
             if (ride.getDriverId() != null) {
                 driverClient.updateDriverAvailability(ride.getDriverId(), "AVAILABLE").block(java.time.Duration.ofSeconds(3));
+                driverClient.updateDriverAvailability(ride.getDriverId(), "AVAILABLE").subscribe();
                 paymentClient.processPayment(
                         ride.getId(),
                         ride.getPassengerId(),
@@ -184,6 +185,7 @@ public class RideService {
                         ride.getActualFare(),
                         "CARD"
                 ).block(java.time.Duration.ofSeconds(3));
+                ).subscribe();
             }
         } catch (Exception e) {
             log.warn("Failed during ride completion inter-service integration: {}", e.getMessage());
