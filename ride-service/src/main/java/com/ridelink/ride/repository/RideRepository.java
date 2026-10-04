@@ -9,7 +9,16 @@ import java.util.List;
 
 @Repository
 public interface RideRepository extends MongoRepository<Ride, String> {
+
     List<Ride> findByPassengerId(String passengerId);
+
+    List<Ride> findByPassengerIdOrderByRequestedAtDesc(String passengerId);
+
     List<Ride> findByDriverId(String driverId);
+
+    List<Ride> findByDriverIdOrderByRequestedAtDesc(String driverId);
+
     List<Ride> findByStatus(RideStatus status);
+
+    List<Ride> findByStatusIn(List<RideStatus> statuses);
 }

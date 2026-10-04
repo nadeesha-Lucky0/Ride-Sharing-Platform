@@ -10,6 +10,14 @@ import java.util.Optional;
 
 @Repository
 public interface DriverRepository extends MongoRepository<Driver, String> {
+
     Optional<Driver> findByUserId(String userId);
+
+    Optional<Driver> findByLicenseNumber(String licenseNumber);
+
     List<Driver> findByStatus(DriverStatus status);
+
+    List<Driver> findByStatusIn(List<DriverStatus> statuses);
+
+    List<Driver> findByServiceCityIgnoreCase(String serviceCity);
 }
