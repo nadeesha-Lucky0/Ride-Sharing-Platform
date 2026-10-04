@@ -1,0 +1,312 @@
+{
+  "info": {
+    "_postman_id": "payment-service-suite-004",
+    "name": "4. Payment Service - Full Test Suite",
+    "description": "Complete test suite covering 100% of Fare & Payment Service endpoints (Dynamic Fare Estimation, Final Pricing Engine, Payment Processing & Simulation, Digital Receipts, Refund Management, and Audit History).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Calculate Upfront Fare Estimate",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+              "var data = pm.response.json();",
+              "pm.expect(data.estimatedTotalFare).to.be.above(0);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"distanceKm\": 8.5,\n  \"estimatedDurationMinutes\": 20,\n  \"vehicleCategory\": \"STANDARD\",\n  \"surgeMultiplier\": 1.0\n}"
+        },
+        "url": { "raw": "{{payment_url}}/api/fare/estimate", "host": ["{{payment_url}}"], "path": ["api", "fare", "estimate"] }
+      }
+    },
+    {
+      "name": "2. Calculate Finalized Trip Fare",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+              "var data = pm.response.json();",
+              "pm.expect(data.finalFare || data.subtotal || data.finalTotalFare).to.be.above(0);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rideId\": \"RIDE-TEST-101\",\n  \"actualDistanceKm\": 9.2,\n  \"actualDurationMinutes\": 24,\n  \"waitingTimeMinutes\": 5,\n  \"vehicleCategory\": \"STANDARD\",\n  \"surgeMultiplier\": 1.2,\n  \"discountAmount\": 50.0\n}"
+        },
+        "url": { "raw": "{{payment_url}}/api/fare/calculate-final", "host": ["{{payment_url}}"], "path": ["api", "fare", "calculate-final"] }
+      }
+    },
+    {
+      "name": "3. Get All Fare Rules",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{payment_url}}/api/fare/rules", "host": ["{{payment_url}}"], "path": ["api", "fare", "rules"] }
+      }
+    },
+    {
+      "name": "4. Get Fare Rule by Vehicle Category (STANDARD)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{payment_url}}/api/fare/rules/STANDARD", "host": ["{{payment_url}}"], "path": ["api", "fare", "rules", "STANDARD"] }
+      }
+    },
+    {
+      "name": "5. Process / Simulate Payment",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var rand = Date.now();",
+              "pm.environment.set('test_ride_id', 'ride_test_' + rand);",
+              "pm.environment.set('test_passenger_id', 'pass_test_' + rand);",
+              "pm.environment.set('test_driver_id', 'drv_test_' + rand);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201 Created', function () { pm.response.to.have.status(201); });",
+              "var data = pm.response.json();",
+              "if (data.paymentId) { pm.environment.set('payment_id', data.paymentId); }",
+              "if (data.receiptNumber) { pm.environment.set('receipt_number', data.receiptNumber); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rideId\": \"{{test_ride_id}}\",\n  \"passengerId\": \"{{test_passenger_id}}\",\n  \"driverId\": \"{{test_driver_id}}\",\n  \"amount\": 450.00,\n  \"paymentMethod\": \"CARD\"\n}"
+        },
+        "url": { "raw": "{{payment_url}}/api/payments/process", "host": ["{{payment_url}}"], "path": ["api", "payments", "process"] }
+      }
+    },
+    {
+      "name": "6. Get Payment Record by ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{payment_url}}/api/payments/{{payment_id}}", "host": ["{{payment_url}}"], "path": ["api", "payments", "{{payment_id}}"] }
+      }
+    },
+    {
+      "name": "7. Get Payment Record by Ride ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{payment_url}}/api/payments/ride/{{test_ride_id}}", "host": ["{{payment_url}}"], "path": ["api", "payments", "ride", "{{test_ride_id}}"] }
+      }
+    },
+    {
+      "name": "8. Get Passenger Payment History",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{payment_url}}/api/payments/passenger/{{test_passenger_id}}", "host": ["{{payment_url}}"], "path": ["api", "payments", "passenger", "{{test_passenger_id}}"] }
+      }
+    },
+    {
+      "name": "9. Get Driver Earnings / Payments History",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{payment_url}}/api/payments/driver/{{test_driver_id}}", "host": ["{{payment_url}}"], "path": ["api", "payments", "driver", "{{test_driver_id}}"] }
+      }
+    },
+    {
+      "name": "10. Get Digital Receipt by Ride ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+              "var data = pm.response.json();",
+              "pm.expect(data.receiptNumber).to.not.be.empty;"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{payment_url}}/api/payments/receipt/{{test_ride_id}}", "host": ["{{payment_url}}"], "path": ["api", "payments", "receipt", "{{test_ride_id}}"] }
+      }
+    },
+    {
+      "name": "11. Get Digital Receipt by Receipt Number",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{payment_url}}/api/payments/receipt/number/{{receipt_number}}", "host": ["{{payment_url}}"], "path": ["api", "payments", "receipt", "number", "{{receipt_number}}"] }
+      }
+    },
+    {
+      "name": "12. Get Passenger Digital Receipts List",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{payment_url}}/api/payments/receipt/passenger/{{test_passenger_id}}", "host": ["{{payment_url}}"], "path": ["api", "payments", "receipt", "passenger", "{{test_passenger_id}}"] }
+      }
+    },
+    {
+      "name": "13. Process Payment Refund",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+              "var data = pm.response.json();",
+              "pm.expect(data.status).to.eql('REFUNDED');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"reason\": \"Customer overcharged dispute resolved\"\n}"
+        },
+        "url": { "raw": "{{payment_url}}/api/payments/{{payment_id}}/refund", "host": ["{{payment_url}}"], "path": ["api", "payments", "{{payment_id}}", "refund"] }
+      }
+    },
+    {
+      "name": "14. Negative Test - Invalid Fare Estimation Payload (Expected 400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Negative test: Missing required distance rejected with 400', function () {",
+              "  pm.response.to.have.status(400);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"distanceKm\": -5.0\n}"
+        },
+        "url": { "raw": "{{payment_url}}/api/fare/estimate", "host": ["{{payment_url}}"], "path": ["api", "fare", "estimate"] }
+      }
+    }
+  ]
+}

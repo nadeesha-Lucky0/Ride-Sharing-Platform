@@ -68,7 +68,7 @@ services:
     environment:
       - SERVER_PORT=8083
       # MongoDB Atlas URI
-      - SPRING_DATA_MONGODB_URI=mongodb+srv://growhighmarketing22_db_user:Growhigh@1019@ridemanagementservice.pcw5epw.mongodb.net/ride_db?retryWrites=true&w=majority&appName=RideManagementService
+      - SPRING_DATA_MONGODB_URI=mongodb+srv://growhighmarketing22_db_user:Growhigh%401019@ridemanagementservice.pcw5epw.mongodb.net/ride_db?retryWrites=true&w=majority&appName=RideManagementService
       - SERVICES_ACCOUNT_URL=http://account-service:8081
       - SERVICES_DRIVER_URL=http://driver-service:8082
       - SERVICES_PAYMENT_URL=http://payment-service:8084

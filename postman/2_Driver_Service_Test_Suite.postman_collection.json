@@ -1,0 +1,350 @@
+{
+  "info": {
+    "_postman_id": "driver-service-suite-002",
+    "name": "2. Driver Service - Full Test Suite",
+    "description": "Complete test suite covering 100% of Driver & Vehicle Service endpoints (Driver Operational Profile, Fleet Vehicle Registration, Availability Toggles, GPS Geolocation Tracking, Proximity Search, and CRUD operations).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Create Driver Operational Profile",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var rand = Date.now();",
+              "pm.environment.set('driver_license', 'B' + Math.floor(1000000 + Math.random() * 9000000));",
+              "pm.environment.set('driver_user_id', 'usr_driver_' + rand);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK / 201 Created', function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "var data = pm.response.json();",
+              "if (data.id) { pm.environment.set('driver_id', data.id); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{driver_user_id}}\",\n  \"fullName\": \"Kamal Fernando\",\n  \"phoneNumber\": \"+94774445566\",\n  \"licenseNumber\": \"{{driver_license}}\",\n  \"status\": \"OFFLINE\",\n  \"currentLatitude\": 6.9344,\n  \"currentLongitude\": 79.8510,\n  \"currentAddress\": \"Colombo Fort\",\n  \"serviceCity\": \"Colombo\",\n  \"serviceArea\": \"Western Province\"\n}"
+        },
+        "url": { "raw": "{{driver_url}}/api/drivers", "host": ["{{driver_url}}"], "path": ["api", "drivers"] }
+      }
+    },
+    {
+      "name": "2. Get Driver by ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{driver_url}}/api/drivers/{{driver_id}}", "host": ["{{driver_url}}"], "path": ["api", "drivers", "{{driver_id}}"] }
+      }
+    },
+    {
+      "name": "3. Get Driver by User ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{driver_url}}/api/drivers/user/{{driver_user_id}}", "host": ["{{driver_url}}"], "path": ["api", "drivers", "user", "{{driver_user_id}}"] }
+      }
+    },
+    {
+      "name": "4. Get All Drivers (with City Filter)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{driver_url}}/api/drivers?city=Colombo",
+          "host": ["{{driver_url}}"],
+          "path": ["api", "drivers"],
+          "query": [{ "key": "city", "value": "Colombo" }]
+        }
+      }
+    },
+    {
+      "name": "5. Update Availability Status (Set AVAILABLE)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+              "var data = pm.response.json();",
+              "pm.expect(data.status).to.eql('AVAILABLE');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"AVAILABLE\"\n}"
+        },
+        "url": { "raw": "{{driver_url}}/api/drivers/{{driver_id}}/availability", "host": ["{{driver_url}}"], "path": ["api", "drivers", "{{driver_id}}", "availability"] }
+      }
+    },
+    {
+      "name": "6. Toggle Availability Status",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": { "raw": "{{driver_url}}/api/drivers/{{driver_id}}/toggle-status", "host": ["{{driver_url}}"], "path": ["api", "drivers", "{{driver_id}}", "toggle-status"] }
+      }
+    },
+    {
+      "name": "7. Update GPS Location Coordinates",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"latitude\": 6.9350,\n  \"longitude\": 79.8520,\n  \"address\": \"Pettah Market Road, Colombo\"\n}"
+        },
+        "url": { "raw": "{{driver_url}}/api/drivers/{{driver_id}}/location", "host": ["{{driver_url}}"], "path": ["api", "drivers", "{{driver_id}}", "location"] }
+      }
+    },
+    {
+      "name": "8. Update Driver Service Area",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"serviceCity\": \"Greater Colombo\",\n  \"serviceArea\": \"Western Province Zone 1\"\n}"
+        },
+        "url": { "raw": "{{driver_url}}/api/drivers/{{driver_id}}/service-area", "host": ["{{driver_url}}"], "path": ["api", "drivers", "{{driver_id}}", "service-area"] }
+      }
+    },
+    {
+      "name": "9. Register Vehicle for Driver",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201 Created', function () { pm.response.to.have.status(201); });",
+              "var data = pm.response.json();",
+              "if (data.id) { pm.environment.set('vehicle_id', data.id); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"driverId\": \"{{driver_id}}\",\n  \"make\": \"Toyota\",\n  \"model\": \"Prius\",\n  \"year\": 2023,\n  \"color\": \"Silver\",\n  \"licensePlate\": \"WP-CAB-{{$randomInt}}\",\n  \"category\": \"SEDAN\",\n  \"seatingCapacity\": 4,\n  \"active\": true\n}"
+        },
+        "url": { "raw": "{{driver_url}}/api/vehicles", "host": ["{{driver_url}}"], "path": ["api", "vehicles"] }
+      }
+    },
+    {
+      "name": "10. Get Vehicle by ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{driver_url}}/api/vehicles/{{vehicle_id}}", "host": ["{{driver_url}}"], "path": ["api", "vehicles", "{{vehicle_id}}"] }
+      }
+    },
+    {
+      "name": "11. Get All Vehicles for Driver",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{driver_url}}/api/vehicles/driver/{{driver_id}}", "host": ["{{driver_url}}"], "path": ["api", "vehicles", "driver", "{{driver_id}}"] }
+      }
+    },
+    {
+      "name": "12. Get Active Vehicle for Driver",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{driver_url}}/api/vehicles/driver/{{driver_id}}/active", "host": ["{{driver_url}}"], "path": ["api", "vehicles", "driver", "{{driver_id}}", "active"] }
+      }
+    },
+    {
+      "name": "13. Query Available Eligible Drivers (Haversine)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{driver_url}}/api/drivers/available?latitude=6.9344&longitude=79.8510&radiusKm=15",
+          "host": ["{{driver_url}}"],
+          "path": ["api", "drivers", "available"],
+          "query": [
+            { "key": "latitude", "value": "6.9344" },
+            { "key": "longitude", "value": "79.8510" },
+            { "key": "radiusKm", "value": "15" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "14. Update Vehicle Specifications",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"driverId\": \"{{driver_id}}\",\n  \"make\": \"Toyota\",\n  \"model\": \"Prius Prime\",\n  \"year\": 2024,\n  \"color\": \"Pearl White\",\n  \"licensePlate\": \"WP-CAB-{{$randomInt}}\",\n  \"category\": \"SEDAN\",\n  \"seatingCapacity\": 4,\n  \"active\": true\n}"
+        },
+        "url": { "raw": "{{driver_url}}/api/vehicles/{{vehicle_id}}", "host": ["{{driver_url}}"], "path": ["api", "vehicles", "{{vehicle_id}}"] }
+      }
+    },
+    {
+      "name": "15. Negative Test - Invalid GPS Coordinates (Expected 400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Negative test: Invalid latitude rejected with 400', function () {",
+              "  pm.response.to.have.status(400);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"latitude\": 999.0,\n  \"longitude\": 79.8510\n}"
+        },
+        "url": { "raw": "{{driver_url}}/api/drivers/{{driver_id}}/location", "host": ["{{driver_url}}"], "path": ["api", "drivers", "{{driver_id}}", "location"] }
+      }
+    }
+  ]
+}

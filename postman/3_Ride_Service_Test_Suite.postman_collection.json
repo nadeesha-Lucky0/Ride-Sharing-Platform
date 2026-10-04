@@ -1,0 +1,259 @@
+{
+  "info": {
+    "_postman_id": "ride-service-suite-003",
+    "name": "3. Ride Service - Full Test Suite",
+    "description": "Complete test suite covering 100% of Ride Management Service endpoints (Ride Request Dispatching, Finite State Machine Lifecycle, Driver Assignment, Accept, Start, Complete, Cancel, Histories, and Validation Guards).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Request a New Ride",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var rand = Date.now();",
+              "if (!pm.environment.get('passenger_id')) { pm.environment.set('passenger_id', 'usr_passenger_' + rand); }",
+              "if (!pm.environment.get('driver_id')) { pm.environment.set('driver_id', 'drv_active_' + rand); }"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201 Created', function () { pm.response.to.have.status(201); });",
+              "var data = pm.response.json();",
+              "if (data.id) { pm.environment.set('ride_id', data.id); }",
+              "if (data.driverId) { pm.environment.set('driver_id', data.driverId); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"passengerId\": \"{{passenger_id}}\",\n  \"pickupLocation\": {\n    \"address\": \"Colombo Fort Station\",\n    \"latitude\": 6.9344,\n    \"longitude\": 79.8510\n  },\n  \"dropoffLocation\": {\n    \"address\": \"Bambalapitiya Commercial Center\",\n    \"latitude\": 6.8920,\n    \"longitude\": 79.8550\n  }\n}"
+        },
+        "url": { "raw": "{{ride_url}}/api/rides/request", "host": ["{{ride_url}}"], "path": ["api", "rides", "request"] }
+      }
+    },
+    {
+      "name": "2. Get Ride Details by ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{ride_url}}/api/rides/{{ride_id}}", "host": ["{{ride_url}}"], "path": ["api", "rides", "{{ride_id}}"] }
+      }
+    },
+    {
+      "name": "3. Get All System Rides",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{ride_url}}/api/rides", "host": ["{{ride_url}}"], "path": ["api", "rides"] }
+      }
+    },
+    {
+      "name": "4. Get Passenger Ride History",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{ride_url}}/api/rides/passenger/{{passenger_id}}", "host": ["{{ride_url}}"], "path": ["api", "rides", "passenger", "{{passenger_id}}"] }
+      }
+    },
+    {
+      "name": "5. Driver Accepts Ride (ACCEPTED)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Ride status is ACCEPTED', function () {",
+              "  pm.response.to.have.status(200);",
+              "  var data = pm.response.json();",
+              "  pm.expect(data.status).to.eql('ACCEPTED');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": {
+          "raw": "{{ride_url}}/api/rides/{{ride_id}}/accept?driverId={{driver_id}}",
+          "host": ["{{ride_url}}"],
+          "path": ["api", "rides", "{{ride_id}}", "accept"],
+          "query": [{ "key": "driverId", "value": "{{driver_id}}" }]
+        }
+      }
+    },
+    {
+      "name": "6. Start Trip Journey (IN_PROGRESS)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Trip started: status is IN_PROGRESS', function () {",
+              "  pm.response.to.have.status(200);",
+              "  var data = pm.response.json();",
+              "  pm.expect(data.status).to.eql('IN_PROGRESS');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": {
+          "raw": "{{ride_url}}/api/rides/{{ride_id}}/start?driverId={{driver_id}}",
+          "host": ["{{ride_url}}"],
+          "path": ["api", "rides", "{{ride_id}}", "start"],
+          "query": [{ "key": "driverId", "value": "{{driver_id}}" }]
+        }
+      }
+    },
+    {
+      "name": "7. Complete Trip (COMPLETED & Settle Payment)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Trip completed successfully: status is COMPLETED', function () {",
+              "  pm.response.to.have.status(200);",
+              "  var data = pm.response.json();",
+              "  pm.expect(data.status).to.eql('COMPLETED');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": {
+          "raw": "{{ride_url}}/api/rides/{{ride_id}}/complete?driverId={{driver_id}}",
+          "host": ["{{ride_url}}"],
+          "path": ["api", "rides", "{{ride_id}}", "complete"],
+          "query": [{ "key": "driverId", "value": "{{driver_id}}" }]
+        }
+      }
+    },
+    {
+      "name": "8. Request 2nd Ride (for Cancellation Testing)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201 Created', function () { pm.response.to.have.status(201); });",
+              "var data = pm.response.json();",
+              "if (data.id) { pm.environment.set('cancel_ride_id', data.id); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"passengerId\": \"{{passenger_id}}\",\n  \"pickupLocation\": {\n    \"address\": \"Majestic City, Colombo 04\",\n    \"latitude\": 6.8940,\n    \"longitude\": 79.8545\n  },\n  \"dropoffLocation\": {\n    \"address\": \"Galle Face Green, Colombo 03\",\n    \"latitude\": 6.9270,\n    \"longitude\": 79.8430\n  }\n}"
+        },
+        "url": { "raw": "{{ride_url}}/api/rides/request", "host": ["{{ride_url}}"], "path": ["api", "rides", "request"] }
+      }
+    },
+    {
+      "name": "9. Cancel Ride with Reason",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Ride cancelled: status is CANCELLED', function () {",
+              "  pm.response.to.have.status(200);",
+              "  var data = pm.response.json();",
+              "  pm.expect(data.status).to.eql('CANCELLED');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cancelledBy\": \"PASSENGER\",\n  \"userId\": \"{{passenger_id}}\",\n  \"reason\": \"Passenger changed travel plans\"\n}"
+        },
+        "url": { "raw": "{{ride_url}}/api/rides/{{cancel_ride_id}}/cancel", "host": ["{{ride_url}}"], "path": ["api", "rides", "{{cancel_ride_id}}", "cancel"] }
+      }
+    },
+    {
+      "name": "10. Negative Test - Illegal State Transition (Expected 422)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Illegal transition correctly blocked with 422 Unprocessable Entity', function () {",
+              "  pm.response.to.have.status(422);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"REQUESTED\"\n}"
+        },
+        "url": { "raw": "{{ride_url}}/api/rides/{{ride_id}}/status", "host": ["{{ride_url}}"], "path": ["api", "rides", "{{ride_id}}", "status"] }
+      }
+    }
+  ]
+}
